@@ -10,6 +10,10 @@ Maintenance Log:
 			Started with introduction
 			11:50 finished introduction
 			13:02 cannot get VS to push changes (sync just pulls)
+			13:09 figured out I need to commit the changes.
+					Home button of Team Explorer, create commit message, press <Commit All> button.
+					link below straightened me out.
+			https://blogs.msdn.microsoft.com/benjaminperkins/2016/04/01/setting-up-and-using-github-in-visual-studio-2015/
 */
 
 #include <stdio.h>
