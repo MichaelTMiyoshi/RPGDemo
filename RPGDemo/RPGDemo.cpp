@@ -17,7 +17,10 @@ Pseudocode:
 		enter game
 	game loop
 
-
+Note:
+	GitHub:		When making changes, you need to do the following:
+			*****	Commit, Sync, Publish     *****
+				Every time.
 Maintenance Log:
 08/16/2019	Began program from scratch
 			Started with introduction (GS1-4)
