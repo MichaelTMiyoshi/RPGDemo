@@ -54,6 +54,126 @@ Maintenance Log:
 #include <iostream>
 using namespace std;
 
+void ShowStats(string name, int health, int hitPoints, string equipmentName)
+{
+	printf("%s.\nYour stats are:\n\tHealth:\t\t%d\n\tHit Points:\t%d\n", name.c_str(), health, hitPoints);
+	printf("Your equipment:\n\t%s\n", equipmentName.c_str());
+}
+
+string SetEquipmentName(int equipment)
+{
+	switch (equipment)
+	{
+	case 1:
+		return "pencil";
+		break;
+	case 2:
+		return "laptop computer";
+		break;
+	case 3:
+		return "book of matches";
+		break;
+	}
+	return "";
+}
+
+bool TestHealth(int &health)
+{
+	if (health <= 0) 
+	{
+		printf("You lose!\n\n");
+		health = 0;
+		return false;
+	}
+	else
+	{
+		return true;
+	}
+}
+
+int Room0(int room, int &health)
+{
+	char choice;
+	printf("This is the first room\n");
+	printf("Would you like to go to the second room?  (Y/N)  >>>  ");
+	scanf_s("%c", &choice, 1);
+	fseek(stdin, 0, SEEK_END);
+	choice = toupper(choice);
+	if (choice == 'Y')
+	{
+		room = 1;
+	}
+	else if (health < 10)
+	{
+		health++;
+		printf("You increased your health.\n");
+	}
+
+	return room;
+}
+
+int Room1(int room, int &equipment, string equipmentName, int &timesThrough)
+{
+	char choice;
+	printf("This is the second room\n");
+	if (equipment != 1)	// not a pencil
+	{
+		printf("You found a pencil.\n");
+		printf("Would you like to trade your %s for a pencil?  (Y/N)  >>>  ", equipmentName.c_str());
+		scanf_s("%c", &choice, 1);
+		fseek(stdin, 0, SEEK_END);
+		choice = toupper(choice);
+		if (choice == 'Y')
+		{
+			equipment = 1;
+		}
+		else
+		{
+			if (1 <= timesThrough)
+			{
+				printf("Are you sure you do not want the pencil?  (Y/N)  >>>  ");
+				scanf_s("%c", &choice, 1);
+				fseek(stdin, 0, SEEK_END);
+				choice = toupper(choice);
+				if (choice == 'N')
+				{
+					//continue;	// go back to the top of the loop
+					return room;
+				}
+
+			}
+		}
+	}
+
+	printf("\nWould you like to go to the third room?  (Y/N)  >>>  ");
+	scanf_s("%c", &choice, 1);
+	fseek(stdin, 0, SEEK_END);
+	choice = toupper(choice);
+	if (choice == 'Y')
+	{
+		room = 2;
+	}
+
+	timesThrough++;
+
+	return room;
+}
+
+int Room2(int health, int equipment, string equipmentName)
+{
+	printf("I see that you brought a %s to take your final competency test.\n", equipmentName.c_str());
+	if (equipment == 1)
+	{
+		printf("Very good.  You will need it to complete your task.\n\n");
+	}
+	else
+	{
+		printf("Too bad.  You will need a pencil to complete your task.\n\n");
+		health -= 3;
+	}
+	return health;
+}
+
 int main()
 {
 	srand((unsigned)time(NULL));
@@ -91,22 +211,22 @@ int main()
 		printf("\tB. Laptop computer\n");
 		printf("\tC. Book of matches\n");
 		printf(">>>  ");
-		scanf("%c", &choice);
+		scanf_s("%c", &choice, 1);
 		fseek(stdin, 0, SEEK_END);
 		ready = true;
 		switch (choice)
 		{
 		case 'A': case 'a':
 			equipment = 1;
-			equipmentName = "pencil";
+			//equipmentName = "pencil";
 			break;
 		case 'B': case 'b':
 			equipment = 2;
-			equipmentName = "laptop computer";
+			//equipmentName = "laptop computer";
 			break;
 		case 'C': case 'c':
 			equipment = 3;
-			equipmentName = "book of matches";
+			//equipmentName = "book of matches";
 			break;
 		default:
 			printf("You must choose to arm yourself with something.");
@@ -116,6 +236,7 @@ int main()
 
 		if (equipment != 0)
 		{
+			equipmentName = SetEquipmentName(equipment);
 			printf("A %s is a great choice.", equipmentName.c_str());
 		}
 
@@ -125,7 +246,7 @@ int main()
 		}
 
 		printf("\n\n\nAre you ready to play the game?  >>>  ");
-		scanf("%c", &choice);
+		scanf_s("%c", &choice, 1);
 		fseek(stdin, 0, SEEK_END);
 		if (toupper(choice) == 'N')
 		{
@@ -140,79 +261,47 @@ int main()
 
 	do
 	{
+		ShowStats(name, health, hitPoints, equipmentName);
 		char choice;
 		if (room == 0)
 		{
-			printf("This is the first room\n");
-			printf("Would you like to go to the second room?  (Y/N)  >>>  ");
-			scanf("%c", &choice);
-			fseek(stdin, 0, SEEK_END);
-			choice = toupper(choice);
-			if (choice == 'Y')
-			{
-				room = 1;
-			}
+			room = Room0(room, health);
 		}
 		else if (room == 1)
 		{
-			printf("This is the second room\n");
-			if (equipment != 1)	// not a pencil
-			{
-				printf("You found a pencil.\n");
-				printf("Would you like to trade your %s for a pencil?  (Y/N)  >>>  ", equipmentName.c_str());
-				scanf("%c", &choice);
-				fseek(stdin, 0, SEEK_END);
-				choice = toupper(choice);
-				if (choice == 'Y')
-				{
-					equipment = 1;
-				}
-				else
-				{
-					if (1 <= timesThrough)
-					{
-						printf("Are you sure you do not want the pencil?  (Y/N)  >>>  ");
-						scanf("%c", &choice);
-						fseek(stdin, 0, SEEK_END);
-						choice = toupper(choice);
-						if (choice == 'N')
-						{
-							continue;	// go back to the top of the loop
-						}
-
-					}
-				}
-			}
-
-			printf("\nWould you like to go to the third room?  (Y/N)  >>>  ");
-			scanf("%c", &choice);
-			fseek(stdin, 0, SEEK_END);
-			choice = toupper(choice);
-			if (choice == 'Y')
-			{
-				room = 2;
-			}
-			timesThrough++;
+			room = Room1(room, equipment, equipmentName, timesThrough);
+			equipmentName = SetEquipmentName(equipment);	// in case the equipment changed
 		}
 		else if (room == 2)
 		{
 			printf("This is the third room\n");
-			if (equipment != 1)
+			health = Room2(health, equipment, equipmentName);
+			if (TestHealth(health) && equipment != 1)
 			{
-				printf("\n\nYou do not have a pencil.  You  must go back to the first room.\n");
+				printf("\n\nYou  must go back to the first room to study harder.\n");
 				room = 0;
 				printf("Press a key to go to the first room.\n\n");
 				_getch();
 				fseek(stdin, 0, SEEK_END);
 			}
-			else
+			else //if(!TestHealth(health)  || equipment == 1)
 			{
 				exit = true;
 			}
 		}
 	} while (!exit);
 
-	printf("\n\nWay to go!  You made it past all the competency tests!\n\n");
+	printf("Final Stats:\n\n");
+	ShowStats(name, health, hitPoints, equipmentName);
+
+	if (TestHealth(health))
+	{
+		printf("\n\nWay to go!  You made it past all the competency tests!\n\n");
+	}
+	else
+	{
+		printf("\n\nBetter luck next time.\n\n");
+	}
 
 	// keep these all together at the end of main()
 	printf("\n\nPress the any key to exit...");
