@@ -49,6 +49,12 @@ Maintenance Log:
 			- setting equipmentName based on equipment (instead of needing to change both manually
 			- checking health to see if you lose (health <= 0)
 			- function for each room (3, numbered 0-2)
+08/19/2019	structs.
+			user statistics modified to use a struct.
+			send struct to functions instead of using single variable pass by ref and returning
+				continue to return room from the rooms, pass struct by ref
+			should add at least 2 NPCs (will be teachers)
+				they are just talking heads not really NPCs
 */
 
 #include <stdio.h>
@@ -59,23 +65,35 @@ Maintenance Log:
 #include <iostream>
 using namespace std;
 
-void ShowStats(string name, int health, int hitPoints, string equipmentName)
+// GS7-6 enum and struct
+enum Equip {none, pencil, laptop, matches};
+
+struct Player
 {
-	printf("%s.\nYour stats are:\n\tHealth:\t\t%d\n\tHit Points:\t%d\n", name.c_str(), health, hitPoints);
-	printf("Your equipment:\n\t%s\n", equipmentName.c_str());
+	string name;
+	int health, hitPoints;
+	Equip equipment;
+	string equipmentName;
+};
+
+// GS6-6 functions
+void ShowStats(Player P)
+{
+	printf("%s.\nYour stats are:\n\tHealth:\t\t%d\n\tHit Points:\t%d\n", P.name.c_str(), P.health, P.hitPoints);
+	printf("Your equipment:\n\t%s\n", P.equipmentName.c_str());
 }
 
-string SetEquipmentName(int equipment)
+string SetEquipmentName(Equip equipment)
 {
 	switch (equipment)
 	{
-	case 1:
+	case pencil:
 		return "pencil";
 		break;
-	case 2:
+	case laptop:
 		return "laptop computer";
 		break;
-	case 3:
+	case matches:
 		return "book of matches";
 		break;
 	}
@@ -96,41 +114,56 @@ bool TestHealth(int &health)
 	}
 }
 
-int Room0(int room, int &health)
+int Room0(int room, Player &P)
 {
 	char choice;
-	printf("This is the first room\n");
+	printf("This is the first room.  I am Mr. Taskmaster, your taskmaster.\n");
+	printf("You may study for competency tests here if you like\n");
+	printf("or proceed to the next room to exchange equipment or sharpen pencils.\n");
 	printf("Would you like to go to the second room?  (Y/N)  >>>  ");
 	scanf_s("%c", &choice, 1);
 	fseek(stdin, 0, SEEK_END);
 	choice = toupper(choice);
-	if (choice == 'Y')
+	if (choice == 'Y' || 10 <= P.health)
 	{
 		room = 1;
+		if (P.health == 10)
+		{
+			printf("You must go to the next room\n");
+			printf("Press a key to continue...\n");
+			_getch();
+			fseek(stdin, 0, SEEK_END);
+		}
 	}
-	else if (health < 10)
+	else if (P.health < 10)
 	{
-		health++;
+		P.health++;
 		printf("You increased your health.\n");
+		printf("Press a key to continue...\n");
+		_getch();
+		fseek(stdin, 0, SEEK_END);
 	}
 
 	return room;
 }
 
-int Room1(int room, int &equipment, string equipmentName, int &timesThrough)
+int Room1(int room, Player &P, int &timesThrough)
 {
 	char choice;
 	printf("This is the second room\n");
-	if (equipment != 1)	// not a pencil
+	printf("I am Ms. Battle Axe, your armorer.\n");
+	printf("You may choose other items to equip yourself for the tests ahead.\n");
+	printf("Or you may just go as you are.\n");
+	if (P.equipment != pencil)	// not a pencil
 	{
-		printf("You found a pencil.\n");
-		printf("Would you like to trade your %s for a pencil?  (Y/N)  >>>  ", equipmentName.c_str());
+		//printf("You found a pencil.\n");
+		printf("Would you like to trade your %s for a pencil?  (Y/N)  >>>  ", P.equipmentName.c_str());
 		scanf_s("%c", &choice, 1);
 		fseek(stdin, 0, SEEK_END);
 		choice = toupper(choice);
 		if (choice == 'Y')
 		{
-			equipment = 1;
+			P.equipment = pencil;
 		}
 		else
 		{
@@ -164,19 +197,23 @@ int Room1(int room, int &equipment, string equipmentName, int &timesThrough)
 	return room;
 }
 
-int Room2(int health, int equipment, string equipmentName)
+int Room2(Player P)
 {
-	printf("I see that you brought a %s to take your final competency test.\n", equipmentName.c_str());
-	if (equipment == 1)
+	printf("Welcome to the competency test room.\n");
+	printf("I am Mr. Proctor, your test proctor.\n");
+	printf("I am your doom!  Mwa ha ha!  Oops.  Sorry 'bout that.\n");
+	printf("You must complete the competency tests to win the game.\n");
+	printf("I see that you brought a %s to take your final competency test.\n", P.equipmentName.c_str());
+	if (P.equipment == 1)
 	{
 		printf("Very good.  You will need it to complete your task.\n\n");
 	}
 	else
 	{
 		printf("Too bad.  You will need a pencil to complete your task.\n\n");
-		health -= 3;
+		P.health -= 3;
 	}
-	return health;
+	return P.health;
 }
 
 int main()
@@ -191,22 +228,24 @@ int main()
 
 // GS3-1 variables
 	printf("Let us start by you telling me your name >>>  ");
-	string name;
-	getline(cin, name, '\n');	// let the user have spaces in name
+	Player P;
+	//string name;
+	getline(cin, P.name, '\n');	// let the user have spaces in name
 	fseek(stdin, 0, SEEK_END);
 	int min = 5, max = 10;
-	int health;
-	int hitPoints;
+	//int health;
+	//int hitPoints;
 
-	health = min + rand() % (max - min + 1);
-	hitPoints = min + rand() % (max - min + 1);
+	P.health = min + rand() % (max - min + 1);
+	P.hitPoints = min + rand() % (max - min + 1);
+	P.equipment = none;
 
-	printf("Well hello %s.\nYour stats are:\n\tHealth:\t\t%d\n\tHit Points:\t%d\n", name.c_str(), health, hitPoints);
+	printf("Well hello %s.\nYour stats are:\n\tHealth:\t\t%d\n\tHit Points:\t%d\n", P.name.c_str(), P.health, P.hitPoints);
 
 //GS4-6 main menu and game loop
 	bool ready = false;
-	int equipment = 0;
-	string equipmentName = "";
+	//int equipment = 0;
+	//string equipmentName = "";
 	do 
 	{
 		char choice;
@@ -222,27 +261,28 @@ int main()
 		switch (choice)
 		{
 		case 'A': case 'a':
-			equipment = 1;
+			P.equipment = pencil;
 			//equipmentName = "pencil";
 			break;
 		case 'B': case 'b':
-			equipment = 2;
+			P.equipment = laptop;
 			//equipmentName = "laptop computer";
 			break;
 		case 'C': case 'c':
-			equipment = 3;
+			P.equipment = matches;
 			//equipmentName = "book of matches";
 			break;
 		default:
 			printf("You must choose to arm yourself with something.");
+			P.equipment = none;
 			ready = false;
 			break;
 		}
 
-		if (equipment != 0)
+		if (P.equipment != none)
 		{
-			equipmentName = SetEquipmentName(equipment);
-			printf("A %s is a great choice.", equipmentName.c_str());
+			P.equipmentName = SetEquipmentName(P.equipment);
+			printf("A %s is a great choice.", P.equipmentName.c_str());
 		}
 
 		if (!ready)
@@ -262,26 +302,28 @@ int main()
 
 	bool exit = false;
 	int room = 0;
-	int timesThrough = 0;
-
+	int timesThrough = 0;	// keeps track of room1() times through.  Asks if player is sure does not want to exchange.
+	// game loop
 	do
 	{
-		ShowStats(name, health, hitPoints, equipmentName);
+		system("cls");
+		ShowStats(P);
+		printf("\n");
 		char choice;
 		if (room == 0)
 		{
-			room = Room0(room, health);
+			room = Room0(room, P);
 		}
 		else if (room == 1)
 		{
-			room = Room1(room, equipment, equipmentName, timesThrough);
-			equipmentName = SetEquipmentName(equipment);	// in case the equipment changed
+			room = Room1(room, P, timesThrough);
+			P.equipmentName = SetEquipmentName(P.equipment);	// in case the equipment changed
 		}
 		else if (room == 2)
 		{
 			printf("This is the third room\n");
-			health = Room2(health, equipment, equipmentName);
-			if (TestHealth(health) && equipment != 1)
+			P.health = Room2(P);
+			if (TestHealth(P.health) && P.equipment != 1)
 			{
 				printf("\n\nYou  must go back to the first room to study harder.\n");
 				room = 0;
@@ -292,14 +334,20 @@ int main()
 			else //if(!TestHealth(health)  || equipment == 1)
 			{
 				exit = true;
+				printf("Nice job, %s.\n", P.name.c_str());
+				printf("Press a key to see your final stats.\n\n");
+				_getch();
+				fseek(stdin, 0, SEEK_END);
 			}
 		}
-	} while (!exit);
+	} while (!exit);	// game loop end
 
+	system("cls");
 	printf("Final Stats:\n\n");
-	ShowStats(name, health, hitPoints, equipmentName);
+	ShowStats(P);
 
-	if (TestHealth(health))
+	// did you win or lose?
+	if (TestHealth(P.health))
 	{
 		printf("\n\nWay to go!  You made it past all the competency tests!\n\n");
 	}
