@@ -44,6 +44,11 @@ Maintenance Log:
 						room 2 is the exit.  if you have the pencil.  if not, you go back to room 0
 					added an equipment name
 					added a way to say you really want to exchange for the pencil
+08/17/2019	Created functions.
+			- showing statistics
+			- setting equipmentName based on equipment (instead of needing to change both manually
+			- checking health to see if you lose (health <= 0)
+			- function for each room (3, numbered 0-2)
 */
 
 #include <stdio.h>
