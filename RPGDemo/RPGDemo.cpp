@@ -55,12 +55,34 @@ Maintenance Log:
 				continue to return room from the rooms, pass struct by ref
 			should add at least 2 NPCs (will be teachers)
 				they are just talking heads not really NPCs
+08/20/2019	Add a little color for a nicer UI or UE
+			system("color bf");	// where b stands for background and f stands for foreground
+				case does not matter for the hex digits in color call
+				Hexadecimal digit	Color
+								0	Black
+								1	Blue
+								2	Green
+								3	Cyan
+								4	Red
+								5	Magenta
+								6	Brown
+								7	Light gray
+								8	Dark gray
+								9	Light blue
+								A	Light green
+								B	Light cyan
+								C	Light red
+								D	Light magenta
+								E	Yellow
+								F	White
+
 */
 
 #include <stdio.h>
 #include <conio.h>
 //#include <stdlib.h>
 #include <time.h>
+#include <Windows.h>
 #include <string>
 #include <iostream>
 using namespace std;
@@ -200,6 +222,7 @@ int Room1(int room, Player &P, int &timesThrough)
 int Room2(Player P)
 {
 	printf("Welcome to the competency test room.\n");
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 0x8A);
 	printf("I am Mr. Proctor, your test proctor.\n");
 	printf("I am your doom!  Mwa ha ha!  Oops.  Sorry 'bout that.\n");
 	printf("You must complete the competency tests to win the game.\n");
@@ -216,9 +239,16 @@ int Room2(Player P)
 	return P.health;
 }
 
+void ResetColor()
+{
+	//system("cls");
+	system("color 0A");
+}
+
 int main()
 {
 	srand((unsigned)time(NULL));
+	system("color 0A");		// light green text on black background
 // GS1-4 introduction
 	printf("This is a Demo RPG created by Michael T. Miyoshi\n\n");
 	printf("(It is also a demo for GitHub repos.)\n\n");
@@ -307,6 +337,7 @@ int main()
 	do
 	{
 		system("cls");
+		ResetColor();
 		ShowStats(P);
 		printf("\n");
 		char choice;
