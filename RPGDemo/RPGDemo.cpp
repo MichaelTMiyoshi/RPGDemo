@@ -76,6 +76,14 @@ Maintenance Log:
 								E	Yellow
 								F	White
 
+08/20/2019	14:34	Created new branch called vector
+					Will create NPCs.  Sorta.
+					The struct of NPCs will just be dialogue.
+					- Intro on its own.
+					- Then some random stuff.
+			15:18	Put in all the intro and dialogue strings for the NPCs.
+					Decided to send the whole vector in the first room (room0).
+					Sent only the appropriate element in the vector to the other two rooms.
 */
 
 #include <stdio.h>
@@ -85,6 +93,7 @@ Maintenance Log:
 #include <Windows.h>
 #include <string>
 #include <iostream>
+#include <vector>
 using namespace std;
 
 // GS7-6 enum and struct
@@ -96,6 +105,12 @@ struct Player
 	int health, hitPoints;
 	Equip equipment;
 	string equipmentName;
+};
+
+struct NPC
+{
+	string intro;
+	vector<string> dialogue;
 };
 
 // GS6-6 functions
@@ -136,12 +151,17 @@ bool TestHealth(int &health)
 	}
 }
 
-int Room0(int room, Player &P)
+void ResetColor()
+{
+	system("color 0A");
+}
+
+int Room0(int room, Player &P, vector<NPC> NPCs)
 {
 	char choice;
-	printf("This is the first room.  I am Mr. Taskmaster, your taskmaster.\n");
-	printf("You may study for competency tests here if you like\n");
-	printf("or proceed to the next room to exchange equipment or sharpen pencils.\n");
+	printf("This is the first room.  %s\n", NPCs[room].intro.c_str());
+	printf("%s\n", NPCs[room].dialogue[0].c_str());
+	//printf("\n");
 	printf("Would you like to go to the second room?  (Y/N)  >>>  ");
 	scanf_s("%c", &choice, 1);
 	fseek(stdin, 0, SEEK_END);
@@ -151,7 +171,7 @@ int Room0(int room, Player &P)
 		room = 1;
 		if (P.health == 10)
 		{
-			printf("You must go to the next room\n");
+			printf("%s\n", NPCs[room].dialogue[1].c_str());
 			printf("Press a key to continue...\n");
 			_getch();
 			fseek(stdin, 0, SEEK_END);
@@ -160,7 +180,7 @@ int Room0(int room, Player &P)
 	else if (P.health < 10)
 	{
 		P.health++;
-		printf("You increased your health.\n");
+		printf("%s\n", NPCs[room].dialogue[2].c_str());
 		printf("Press a key to continue...\n");
 		_getch();
 		fseek(stdin, 0, SEEK_END);
@@ -169,13 +189,13 @@ int Room0(int room, Player &P)
 	return room;
 }
 
-int Room1(int room, Player &P, int &timesThrough)
+int Room1(int room, Player &P, int &timesThrough, NPC npc)	// pass one NPC instead of the whole vector
 {
 	char choice;
 	printf("This is the second room\n");
-	printf("I am Ms. Battle Axe, your armorer.\n");
-	printf("You may choose other items to equip yourself for the tests ahead.\n");
-	printf("Or you may just go as you are.\n");
+	printf("%s\n", npc.intro.c_str());
+	printf("%s\n", npc.dialogue[0].c_str());
+	//printf("\n");
 	if (P.equipment != pencil)	// not a pencil
 	{
 		//printf("You found a pencil.\n");
@@ -219,30 +239,48 @@ int Room1(int room, Player &P, int &timesThrough)
 	return room;
 }
 
-int Room2(Player P)
+int Room2(Player P, NPC npc)
 {
 	printf("Welcome to the competency test room.\n");
 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 0x8A);
-	printf("I am Mr. Proctor, your test proctor.\n");
-	printf("I am your doom!  Mwa ha ha!  Oops.  Sorry 'bout that.\n");
-	printf("You must complete the competency tests to win the game.\n");
+	printf("%s\n", npc.intro.c_str());
+	//printf("\n");
+	printf("%s\n", npc.dialogue[0].c_str());
 	printf("I see that you brought a %s to take your final competency test.\n", P.equipmentName.c_str());
 	if (P.equipment == 1)
 	{
-		printf("Very good.  You will need it to complete your task.\n\n");
+		printf("%s\n\n", npc.dialogue[1].c_str());
 	}
 	else
 	{
-		printf("Too bad.  You will need a pencil to complete your task.\n\n");
+		printf("%s\n\n", npc.dialogue[2].c_str());
 		P.health -= 3;
 	}
+	ResetColor();
 	return P.health;
 }
 
-void ResetColor()
+vector<NPC> InitializeNPCs(vector<NPC> NPCs)
 {
-	//system("cls");
-	system("color 0A");
+	NPC temp;
+	temp.intro = "I am Mr. Taskmaster, your taskmaster.";
+	temp.dialogue.push_back("You may study for competency tests here if you like or proceed\nto the next room to exchange equipment or sharpen pencils.");
+	temp.dialogue.push_back("You have practiced enough.  You must go to the next room.");
+	temp.dialogue.push_back("You increased your health by practicing a competency test.");
+	NPCs.push_back(temp);
+	temp.dialogue.clear();
+	temp.intro = "I am Ms. Battle Axe, your armorer.";
+	temp.dialogue.push_back("You may choose other items to equip yourself for the tests ahead.\nOr you may just go as you are.");
+	NPCs.push_back(temp);	// example of ragged or jagged matrix because the NPC is a vector and the dialogue is a vector inside the vector
+	temp.dialogue.clear();
+	temp.intro = "I am Mr. Proctor, your test proctor.\nI am your doom!  Mwa ha ha!  Oops.  Sorry 'bout that.";
+	temp.dialogue.push_back("You must complete the competency tests to win the game.");
+	temp.dialogue.push_back("Very good.  You will need it to complete your task.");
+	temp.dialogue.push_back("Too bad.  You will need a pencil to complete your task.");
+	temp.dialogue.push_back("You  must go back to the first room to study harder.");
+	NPCs.push_back(temp);
+
+	return NPCs;
 }
 
 int main()
@@ -272,7 +310,11 @@ int main()
 
 	printf("Well hello %s.\nYour stats are:\n\tHealth:\t\t%d\n\tHit Points:\t%d\n", P.name.c_str(), P.health, P.hitPoints);
 
-//GS4-6 main menu and game loop
+// GS8-6 vector of NPCs
+	vector<NPC> NPCs;
+	NPCs = InitializeNPCs(NPCs);
+
+// GS4-6 main menu and game loop
 	bool ready = false;
 	//int equipment = 0;
 	//string equipmentName = "";
@@ -343,20 +385,20 @@ int main()
 		char choice;
 		if (room == 0)
 		{
-			room = Room0(room, P);
+			room = Room0(room, P, NPCs);
 		}
 		else if (room == 1)
 		{
-			room = Room1(room, P, timesThrough);
+			room = Room1(room, P, timesThrough, NPCs[room]);
 			P.equipmentName = SetEquipmentName(P.equipment);	// in case the equipment changed
 		}
 		else if (room == 2)
 		{
 			printf("This is the third room\n");
-			P.health = Room2(P);
+			P.health = Room2(P, NPCs[room]);
 			if (TestHealth(P.health) && P.equipment != 1)
 			{
-				printf("\n\nYou  must go back to the first room to study harder.\n");
+				printf("\n\n%s\n", NPCs[room].dialogue[3].c_str());
 				room = 0;
 				printf("Press a key to go to the first room.\n\n");
 				_getch();
